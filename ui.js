@@ -115,8 +115,122 @@
     chevron: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`
   });
 
+  /* ---------- 頭像照片 ---------- */
+  const IMG_OK = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+  ui.avatarImg = function (pid) {
+    const d = JP.store.data.meta.find((x) => x.id === "avatar-" + pid);
+    return d && typeof d.img === "string" && IMG_OK.test(d.img) ? d.img : null;
+  };
+  let avatarSig = null;
+  ui.syncAvatars = function () {
+    const rows = C.people.map((p) => ({ id: p.id, img: ui.avatarImg(p.id) })).filter((r) => r.img);
+    const sig = rows.map((r) => r.id + ":" + r.img.length + r.img.slice(-24)).join("|");
+    if (sig === avatarSig) return;
+    avatarSig = sig;
+    let el = document.getElementById("avatarStyles");
+    if (!el) { el = document.createElement("style"); el.id = "avatarStyles"; document.head.appendChild(el); }
+    el.textContent = rows.map((r) => `.avatar.av-${r.id.replace(/[^a-z0-9_-]/gi, "")}{background-image:url("${r.img}");color:transparent}`).join("\n");
+  };
+
+  ui.pickAvatarFile = function (pid, file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); ui.toast(t("av.loadFail"), true); };
+    img.onload = () => {
+      // 先縮到最長邊 1200px，拖曳時才順
+      const r = Math.min(1, 1200 / Math.max(img.naturalWidth, img.naturalHeight));
+      const src = document.createElement("canvas");
+      src.width = Math.max(1, Math.round(img.naturalWidth * r));
+      src.height = Math.max(1, Math.round(img.naturalHeight * r));
+      src.getContext("2d").drawImage(img, 0, 0, src.width, src.height);
+      URL.revokeObjectURL(url);
+      cropper(pid, src);
+    };
+    img.src = url;
+  };
+
+  function cropper(pid, src) {
+    const N = 560; // 畫布內部解析度
+    const st = { zoom: 1, cx: src.width / 2, cy: src.height / 2 };
+    const base = N / Math.min(src.width, src.height);
+    const scale = () => base * st.zoom;
+    const clampV = (v, a, b) => Math.min(Math.max(v, a), b);
+    ui.sheet({
+      title: t("av.cropTitle", { name: U.pname(pid) }),
+      body: `
+        <div class="crop-wrap"><canvas class="crop-canvas" width="${N}" height="${N}" aria-label="${esc(t("av.cropHint"))}"></canvas><div class="crop-ring" aria-hidden="true"></div></div>
+        <label class="crop-zoom"><span aria-hidden="true">−</span><input type="range" min="1" max="4" step="0.01" value="1" aria-label="zoom"><span aria-hidden="true">+</span></label>
+        <p class="muted small center">${esc(t("av.cropHint"))}</p>`,
+      footer: `<button class="btn ghost" data-close>${esc(t("common.cancel"))}</button><button class="btn primary" data-save>${esc(t("common.save"))}</button>`,
+      onMount(el, api) {
+        const cv = el.querySelector(".crop-canvas");
+        const zoom = el.querySelector(".crop-zoom input");
+        const draw = (canvas, size) => {
+          const half = N / 2 / scale();
+          st.cx = clampV(st.cx, half, src.width - half);
+          st.cy = clampV(st.cy, half, src.height - half);
+          const g = canvas.getContext("2d"), s = scale() * (size / N);
+          g.fillStyle = "#fff"; g.fillRect(0, 0, size, size);
+          g.imageSmoothingQuality = "high";
+          g.drawImage(src, size / 2 - st.cx * s, size / 2 - st.cy * s, src.width * s, src.height * s);
+        };
+        const redraw = () => draw(cv, N);
+        redraw();
+
+        // 拖曳移動、兩指縮放
+        const pts = new Map();
+        let drag = null, pinch = null;
+        const dist = () => { const [a, b] = [...pts.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
+        cv.addEventListener("pointerdown", (e) => {
+          cv.setPointerCapture(e.pointerId);
+          pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          if (pts.size === 2) { pinch = { d: dist(), zoom: st.zoom }; drag = null; }
+          else if (pts.size === 1) drag = { x: e.clientX, y: e.clientY, cx: st.cx, cy: st.cy };
+        });
+        cv.addEventListener("pointermove", (e) => {
+          if (!pts.has(e.pointerId)) return;
+          pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          if (pinch && pts.size === 2) {
+            st.zoom = clampV(pinch.zoom * dist() / pinch.d, 1, 4); zoom.value = st.zoom; redraw();
+          } else if (drag) {
+            const k = N / cv.getBoundingClientRect().width / scale();
+            st.cx = drag.cx - (e.clientX - drag.x) * k;
+            st.cy = drag.cy - (e.clientY - drag.y) * k;
+            redraw();
+          }
+        });
+        const up = (e) => {
+          pts.delete(e.pointerId);
+          if (pts.size < 2) pinch = null;
+          if (pts.size === 1) { const p = [...pts.values()][0]; drag = { x: p.x, y: p.y, cx: st.cx, cy: st.cy }; }
+          if (!pts.size) drag = null;
+        };
+        cv.addEventListener("pointerup", up);
+        cv.addEventListener("pointercancel", up);
+        cv.addEventListener("wheel", (e) => {
+          e.preventDefault();
+          st.zoom = clampV(st.zoom * (e.deltaY < 0 ? 1.08 : 1 / 1.08), 1, 4); zoom.value = st.zoom; redraw();
+        }, { passive: false });
+        zoom.addEventListener("input", () => { st.zoom = +zoom.value; redraw(); });
+
+        el.querySelector("[data-save]").addEventListener("click", () => {
+          const out = document.createElement("canvas");
+          out.width = out.height = 192;
+          draw(out, 192);
+          let q = 0.85, data = out.toDataURL("image/jpeg", q);
+          while (data.length > 60000 && q > 0.4) { q -= 0.1; data = out.toDataURL("image/jpeg", q); }
+          JP.store.put("meta", "avatar-" + pid, { img: data, updatedAt: Date.now(), updatedBy: ui.me() });
+          ui.toast(t("av.saved"));
+          ui.settings();
+        });
+      }
+    });
+  }
+
   /* ---------- 頂欄 ---------- */
   ui.renderHeader = function () {
+    ui.syncAvatars();
     const S = JP.store;
     document.getElementById("brand").textContent = JP.loc(C.tripName);
     const st = S.mode === "local" ? "local" : S.status;
@@ -188,6 +302,17 @@
         <div class="people-pick compact">
           ${C.people.map((p) => `<button class="person-btn ${p.id === me ? "on" : ""}" data-id="${p.id}">${U.avatar(p.id, 30)}<span>${esc(p.name)}</span></button>`).join("")}
         </div>
+        <h3 class="field-label">${esc(t("av.title"))}</h3>
+        <p class="muted small">${esc(t("av.desc"))}</p>
+        <ul class="av-list">
+          ${C.people.map((p) => {
+            const has = !!ui.avatarImg(p.id);
+            return `<li class="av-row">${U.avatar(p.id, 40)}<span class="av-name">${esc(p.name)}</span>
+              <label class="btn small av-up"><input type="file" accept="image/*" class="sr-only" data-avfile="${p.id}">${esc(t(has ? "av.change" : "av.upload"))}</label>
+              ${has ? `<button class="btn small ghost danger-text" data-avdel="${p.id}">${esc(t("av.remove"))}</button>` : ""}
+            </li>`;
+          }).join("")}
+        </ul>
         <h3 class="field-label">${esc(t("settings.lang"))}</h3>
         <div class="seg" role="group">
           <button class="${JP.i18n.lang === "zh" ? "on" : ""}" data-lang="zh">中文</button>
@@ -212,6 +337,15 @@
         }));
         el.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => {
           JP.i18n.set(b.dataset.lang); sh.close(); ui.render();
+        }));
+        el.querySelectorAll("[data-avfile]").forEach((inp) => inp.addEventListener("change", () => {
+          const f = inp.files && inp.files[0];
+          if (f) ui.pickAvatarFile(inp.dataset.avfile, f);
+        }));
+        el.querySelectorAll("[data-avdel]").forEach((b) => b.addEventListener("click", () => {
+          JP.store.del("meta", "avatar-" + b.dataset.avdel);
+          ui.toast(t("av.removed"));
+          setTimeout(() => ui.settings(), 50);
         }));
         const cp = el.querySelector("[data-copy]");
         if (cp) cp.addEventListener("click", async () => {

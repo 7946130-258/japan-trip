@@ -30,6 +30,10 @@
       "me.switch": "切換身分",
       "settings.title": "設定", "settings.tripCode": "旅程代碼", "settings.share": "分享連結給旅伴",
       "settings.leave": "離開這個旅程（換代碼）", "settings.lang": "語言",
+      "av.title": "頭像", "av.desc": "照片會裁成圓形小圖再存，每個人的手機都看得到。也可以幫別人換。",
+      "av.upload": "上傳照片", "av.change": "更換", "av.remove": "移除",
+      "av.cropTitle": "{name} 的頭像", "av.cropHint": "拖曳調整位置，用滑桿或兩指放大縮小",
+      "av.loadFail": "這張圖片打不開，請換一張 JPG 或 PNG", "av.saved": "頭像已更新", "av.removed": "頭像已移除",
 
       "plan.countdown": "出發倒數 {n} 天", "plan.today": "出發日就是今天", "plan.dayN": "第 {n} 天，共 {total} 天",
       "plan.over": "旅程結束",
@@ -124,6 +128,10 @@
       "me.switch": "Switch person",
       "settings.title": "Settings", "settings.tripCode": "Trip code", "settings.share": "Share link with the group",
       "settings.leave": "Leave this trip (use another code)", "settings.lang": "Language",
+      "av.title": "Profile photos", "av.desc": "Photos are cropped into a small circle and shown on everyone's phone. You can set them for others too.",
+      "av.upload": "Upload photo", "av.change": "Change", "av.remove": "Remove",
+      "av.cropTitle": "{name}'s photo", "av.cropHint": "Drag to position, use the slider or pinch to zoom",
+      "av.loadFail": "Couldn't open this image. Try a JPG or PNG", "av.saved": "Photo updated", "av.removed": "Photo removed",
 
       "plan.countdown": "{n} days to go", "plan.today": "We fly today", "plan.dayN": "Day {n} of {total}",
       "plan.over": "Trip complete",

@@ -4,14 +4,14 @@
   const C = window.TRIP_CONFIG;
   const U = JP.u;
 
-  const COLLECTIONS = ["events", "expenses", "flights", "daynotes"];
+  const COLLECTIONS = ["events", "expenses", "flights", "daynotes", "meta"];
   const listeners = new Set();
 
   const S = (JP.store = {
     mode: "local",
     status: "local",
     code: null,
-    data: { events: [], expenses: [], flights: [], daynotes: [] },
+    data: { events: [], expenses: [], flights: [], daynotes: [], meta: [] },
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     cloudConfigured() {
       const f = C.firebase || {};

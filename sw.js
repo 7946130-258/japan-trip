@@ -1,5 +1,5 @@
 /* 離線也能打開網站（資料本身由 Firebase 的離線快取處理） */
-const CACHE = "jp27-v2";
+const CACHE = "jp27-v3";
 const SHELL = [
   "./", "index.html", "styles.css", "config.js", "manifest.webmanifest",
   "i18n.js", "util.js", "store.js", "ui.js", "plan.js", "money.js", "flights.js", "main.js",

@@ -103,7 +103,8 @@
   };
   U.avatar = function (id, size = 32) {
     const p = U.person(id);
-    return `<span class="avatar" style="--av:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px" aria-hidden="true">${U.esc(U.initials(p.name))}</span>`;
+    const cls = "av-" + String(p.id).replace(/[^a-z0-9_-]/gi, "");
+    return `<span class="avatar ${cls}" style="--av:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px" aria-hidden="true">${U.esc(U.initials(p.name))}</span>`;
   };
 
   /* ---------- 城市 ---------- */
