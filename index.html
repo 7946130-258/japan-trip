@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#EFF2F1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="日本行">
+  <meta name="format-detection" content="telephone=no">
+  <title>日本行 2027</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" href="fonts/barlow-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 id="brand" class="brand">日本行 2027</h1>
+    <div class="top-actions">
+      <button id="syncBtn" class="sync" type="button"></button>
+      <button id="langBtn" class="lang-btn" type="button">EN</button>
+      <button id="meBtn" class="me-btn" type="button"></button>
+    </div>
+  </header>
+
+  <main id="view" class="view"></main>
+
+  <nav class="tabbar" aria-label="主選單">
+    <a href="#plan" data-tab="plan"><span class="tab-label">行程</span></a>
+    <a href="#money" data-tab="money"><span class="tab-label">賒賬</span></a>
+    <a href="#flights" data-tab="flights"><span class="tab-label">航班</span></a>
+  </nav>
+
+  <div id="joinRoot" class="join" hidden></div>
+  <div id="sheetRoot"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <noscript><p class="boot-error">請開啟 JavaScript / Please enable JavaScript.</p></noscript>
+
+  <script src="config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/plan.js"></script>
+  <script src="js/money.js"></script>
+  <script src="js/flights.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
