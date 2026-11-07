@@ -1,10 +1,10 @@
 /* 離線也能打開網站（資料本身由 Firebase 的離線快取處理） */
-const CACHE = "jp27-v1";
+const CACHE = "jp27-v2";
 const SHELL = [
   "./", "index.html", "styles.css", "config.js", "manifest.webmanifest",
-  "js/i18n.js", "js/util.js", "js/store.js", "js/ui.js", "js/plan.js", "js/money.js", "js/flights.js", "js/main.js",
-  "fonts/barlow-condensed-latin-500-normal.woff2", "fonts/barlow-condensed-latin-600-normal.woff2", "fonts/barlow-condensed-latin-700-normal.woff2",
-  "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"
+  "i18n.js", "util.js", "store.js", "ui.js", "plan.js", "money.js", "flights.js", "main.js",
+  "barlow-condensed-latin-500-normal.woff2", "barlow-condensed-latin-600-normal.woff2", "barlow-condensed-latin-700-normal.woff2",
+  "icon.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (e) => {
